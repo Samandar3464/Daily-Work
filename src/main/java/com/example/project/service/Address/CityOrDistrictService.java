@@ -34,7 +34,7 @@ public class CityOrDistrictService implements BaseService<CityOrDistrict, CityOr
         CityOrDistrict cityOrDistrict = new CityOrDistrict();
         cityOrDistrict.setName(cityOrDistrictRegisterDto.getName());
         cityOrDistrict.setProvince(province);
-        Province save = provinceRepository.save(province);
+        CityOrDistrict save = cityOrDistrictRepository.save(cityOrDistrict);
         return new ApiResponse<>("Success", 200, save);
     }
 

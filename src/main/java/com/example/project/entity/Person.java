@@ -32,16 +32,13 @@ public class Person implements UserDetails {
     @Pattern(regexp = "^[A-Za-z]*$")
     private String surname;
     @NotBlank
-    private String username;
-    @NotBlank
     @Size(min = 6)
     private String password;
-    @Email
-    private String email;
     @NotBlank
     @Size(min = 9)
     private String phoneNumber;
     private short age;
+    private String aboutMe;
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
@@ -52,10 +49,14 @@ public class Person implements UserDetails {
     private Province province;
     @ManyToOne
     private CityOrDistrict cityOrDistrict;
+    @JsonIgnore
+    @OneToMany(mappedBy = "person", cascade = CascadeType.ALL)
+    private List<Work> works;
     //    @ManyToOne
 //    private Village village;
-    String village;
+    private String village;
     private String homeAddress;
+    private boolean isAccountNonLocked;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -67,6 +68,16 @@ public class Person implements UserDetails {
     }
 
     @Override
+    public String getUsername() {
+        return this.phoneNumber;
+    }
+
+    @Override
+    public String getPassword() {
+        return this.password;
+    }
+
+    @Override
     @JsonIgnore
     public boolean isAccountNonExpired() {
         return true;
@@ -75,7 +86,7 @@ public class Person implements UserDetails {
     @Override
     @JsonIgnore
     public boolean isAccountNonLocked() {
-        return true;
+        return isAccountNonLocked;
     }
 
     @Override

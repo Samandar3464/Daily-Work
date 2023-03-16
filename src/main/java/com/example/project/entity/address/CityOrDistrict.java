@@ -1,12 +1,12 @@
 package com.example.project.entity.address;
 
 import com.example.project.entity.BaseClass;
+import com.example.project.entity.Work;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Cascade;
-import org.hibernate.annotations.CascadeType;
 
 import java.util.List;
 
@@ -26,5 +26,8 @@ public class CityOrDistrict extends BaseClass {
     @ManyToOne
     @JsonIgnore
     private Province province;
+    @JsonIgnore
+    @OneToMany(mappedBy = "cityOrDistrict" ,cascade = CascadeType.ALL )
+    private List<Work> works;
 
 }

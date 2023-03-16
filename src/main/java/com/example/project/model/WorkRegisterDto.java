@@ -9,12 +9,12 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class        WorkRegisterDto {
-    @NotBlank
+public class   WorkRegisterDto {
+    @NotNull
     private String workTitle;
-    @NotBlank
+    @NotNull
     private String workDescription;
-    @NotBlank
+    @NotNull
     private Double startPrice;
     private Double endPrice;
 

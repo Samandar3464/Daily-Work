@@ -11,8 +11,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CityOrDistrictRegisterDto {
-    @NotBlank
+    @NotNull
     private String name;
-    @NotBlank
+    @NotNull
     private int provinceId;
 }

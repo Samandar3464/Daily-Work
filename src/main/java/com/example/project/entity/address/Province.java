@@ -1,6 +1,7 @@
 package com.example.project.entity.address;
 
 import com.example.project.entity.BaseClass;
+import com.example.project.entity.Work;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
@@ -16,10 +17,14 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @Entity
-public class Province  extends BaseClass {
+public class Province extends BaseClass {
     @OneToMany(mappedBy = "province")
     @Cascade(CascadeType.ALL)
     @Column(unique = true)
     @JsonIgnore
-    List<CityOrDistrict> cityOrDistrictList;
+    private List<CityOrDistrict> cityOrDistrictList;
+    @JsonIgnore
+    @OneToMany(mappedBy = "province" , cascade = jakarta.persistence.CascadeType.ALL)
+    private List<Work> workList;
 }
+

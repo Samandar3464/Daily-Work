@@ -3,14 +3,19 @@ package com.example.project.entity;
 import com.example.project.entity.address.CityOrDistrict;
 import com.example.project.entity.address.Province;
 //import com.example.project.entity.address.Village;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.Date;
 
 @Getter
 @Setter
@@ -29,18 +34,16 @@ public class Work {
     @NotNull
     private Double startPrice;
     private Double endPrice;
-    private LocalDateTime createdTime;
+    private LocalDate createdTime;
     @NotNull
-    @ManyToOne()
-    @Cascade(CascadeType.ALL)
+    @ManyToOne
     private WorkCategory workCategory;
-    @OneToOne
+    @ManyToOne
     @NotNull
     private Province province;
-    @OneToOne
+    @ManyToOne
     @NotNull
     private CityOrDistrict cityOrDistrict;
-
     private String village;
     @ManyToOne
     @NotNull

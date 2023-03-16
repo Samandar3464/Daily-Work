@@ -15,8 +15,8 @@ import java.util.Optional;
 public class AuthService implements UserDetailsService {
     private final PersonRepository personRepository;
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<Person> person = personRepository.findByUsername(username);
-        return person.orElseThrow(() -> new UsernameNotFoundException(String.format("username %s not found", username)));
+    public UserDetails loadUserByUsername(String phoneNumber) throws UsernameNotFoundException {
+        Optional<Person> person = personRepository.findByPhoneNumber(phoneNumber);
+        return person.orElseThrow(() -> new UsernameNotFoundException(String.format("username %s not found", phoneNumber)));
     }
 }

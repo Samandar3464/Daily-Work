@@ -1,18 +1,24 @@
 package com.example.project.service;
 
 import com.example.project.api.ApiResponse;
+import com.example.project.entity.Person;
 import com.example.project.entity.Work;
-import com.example.project.entity.WorkCategory;
 import com.example.project.exception.RecordNotFoundException;
-import com.example.project.model.WorkCategoryRegisterDto;
+import com.example.project.exception.UserNotFoundException;
+import com.example.project.model.PersonResponseDto;
 import com.example.project.model.WorkRegisterDto;
+import com.example.project.model.WorkResponseDto;
 import com.example.project.repository.Address.CityOrDistrictRepository;
 import com.example.project.repository.Address.ProvinceRepository;
 //import com.example.project.repository.Address.VillageRepository;
 import com.example.project.repository.WorkCategoryRepository;
 import com.example.project.repository.WorkRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
@@ -26,7 +32,22 @@ public class WorkService {
 
     public ApiResponse add(WorkRegisterDto workRegisterDto) {
         Work save = workRepository.save(workBuilder(workRegisterDto));
-        return new ApiResponse<>("Success", 200, save);
+        Person person = save.getPerson();
+        WorkResponseDto workResponseDto = WorkResponseDto.builder()
+                .id(save.getId())
+                .workTitle(save.getWorkTitle())
+                .workDescription(save.getWorkDescription())
+                .workCategoryName(save.getWorkCategory().getName())
+                .startPrice(save.getStartPrice())
+                .endPrice(save.getEndPrice())
+                .createdTime(save.getCreatedTime())
+                .provinceName(save.getProvince().getName())
+                .cityOrDistrictName(save.getCityOrDistrict().getName())
+                .village(save.getVillage())
+                .personResponseDto(new PersonResponseDto(person.getId(), person.getUsername(), person.getPhoneNumber()))
+                .build();
+
+        return new ApiResponse<>("Success", 200, workResponseDto);
     }
 
 
@@ -34,10 +55,29 @@ public class WorkService {
         return new ApiResponse<>(200, workRepository.findAll());
     }
 
+    public ApiResponse getPersonList() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication.isAuthenticated()) {
+            throw new UserNotFoundException("User not found");
+        }
+        Person person = (Person) authentication.getPrincipal();
+        return new ApiResponse<>(200, workRepository.findAllByPersonId(person.getId()));
+    }
 
     public ApiResponse delete(Long id) {
         workRepository.findById(id).orElseThrow((() -> new RecordNotFoundException("Work not found ")));
         workRepository.deleteById(id);
+        return new ApiResponse<>("Successfully deleted", 200);
+    }
+
+    public ApiResponse deletePersonWork(Long id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication.isAuthenticated()) {
+            throw new UserNotFoundException("User not found");
+        }
+        Person person = (Person) authentication.getPrincipal();
+        workRepository.findById(id).orElseThrow((() -> new RecordNotFoundException("Work not found ")));
+        workRepository.deleteByIdAndPersonId(id, person.getId());
         return new ApiResponse<>("Successfully deleted", 200);
     }
 
@@ -54,6 +94,11 @@ public class WorkService {
     }
 
     private Work workBuilder(WorkRegisterDto workRegisterDto) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication.isAuthenticated()) {
+            throw new UserNotFoundException("User not found");
+        }
+        Person person = (Person) authentication.getPrincipal();
         return Work.builder()
                 .workTitle(workRegisterDto.getWorkTitle())
                 .workDescription(workRegisterDto.getWorkDescription())
@@ -62,11 +107,18 @@ public class WorkService {
                 .workCategory(workCategoryRepository.getById(workRegisterDto.getWorkCategoryId()))
                 .province(provinceRepository.getById(workRegisterDto.getProvinceId()))
                 .cityOrDistrict(cityOrDistrictRepository.getById(workRegisterDto.getCityOrDistrictId()))
+                .createdTime(LocalDate.now())
+                .person(person)
                 .village(workRegisterDto.getVillage())
                 .build();
     }
 
     private Work workBuilderUpdate(WorkRegisterDto workRegisterDto, Long id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication.isAuthenticated()) {
+            throw new UserNotFoundException("User not found");
+        }
+        Person person = (Person) authentication.getPrincipal();
         return Work.builder()
                 .id(id)
                 .workTitle(workRegisterDto.getWorkTitle())
@@ -77,6 +129,7 @@ public class WorkService {
                 .province(provinceRepository.getById(workRegisterDto.getProvinceId()))
                 .cityOrDistrict(cityOrDistrictRepository.getById(workRegisterDto.getCityOrDistrictId()))
                 .village(workRegisterDto.getVillage())
+                .person(person)
                 .build();
     }
 }
