@@ -1,11 +1,15 @@
 package com.example.project.exception;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import javax.naming.TimeLimitExceededException;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -51,10 +55,19 @@ public class CommonExceptionHandler {
 
     @ExceptionHandler(UserNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public FieldErrorResponse handleUserNotFoundException(UserNotFoundException e){
+    public FieldErrorResponse handleUserNotFoundException(UserNotFoundException e) {
         return FieldErrorResponse.builder()
                 .message(e.getMessage())
                 .code("User not found")
+                .build();
+    }
+
+    @ExceptionHandler(TimeExceededException.class)
+    @ResponseStatus(HttpStatus.BAD_GATEWAY)
+    public FieldErrorResponse handleAccessTokenTimeExceededException(TimeExceededException e) {
+        return FieldErrorResponse.builder()
+                .message(e.getMessage())
+                .code("Access token time out")
                 .build();
     }
 }

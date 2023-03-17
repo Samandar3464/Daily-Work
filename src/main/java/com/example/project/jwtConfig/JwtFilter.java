@@ -1,10 +1,12 @@
 package com.example.project.jwtConfig;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -27,23 +29,24 @@ public class JwtFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
         String requestHeader = request.getHeader("Authorization");
-        if (requestHeader == null || !requestHeader.startsWith("Bearer")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-        String token = requestHeader.replace("Bearer ", "");
-        Claims claims = JwtGenerate.isValidAccessToken(token);
-        if (claims == null) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-        List<LinkedHashMap<String, String>> authorities = JwtGenerate.getAuthorities(claims);
-        Authentication authentication = new UsernamePasswordAuthenticationToken(
-                claims.getSubject(), null,
-                getAuthorities(authorities)
-        );
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        filterChain.doFilter(request, response);
+           if (requestHeader == null || !requestHeader.startsWith("Bearer")) {
+               filterChain.doFilter(request, response);
+               return;
+           }
+           String token = requestHeader.replace("Bearer ", "");
+           Claims claims = JwtGenerate.isValidAccessToken(token);
+           if (claims == null) {
+               filterChain.doFilter(request, response);
+               return;
+           }
+           List<LinkedHashMap<String, String>> authorities = JwtGenerate.getAuthorities(claims);
+           Authentication authentication = new UsernamePasswordAuthenticationToken(
+                   claims.getSubject(), null,
+                   getAuthorities(authorities)
+           );
+           SecurityContextHolder.getContext().setAuthentication(authentication);
+           filterChain.doFilter(request, response);
+
     }
 
     private List<SimpleGrantedAuthority> getAuthorities(List<LinkedHashMap<String, String>> authorities) {

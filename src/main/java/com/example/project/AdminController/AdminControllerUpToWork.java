@@ -3,6 +3,7 @@ package com.example.project.AdminController;
 import com.example.project.api.ApiResponse;
 import com.example.project.service.WorkService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -11,10 +12,12 @@ import org.springframework.web.bind.annotation.*;
 public class AdminControllerUpToWork {
     private final WorkService workService;
     @GetMapping("/getWorkList")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
     public ApiResponse<?> getWorkList() {
         return workService.getList();
     }
     @DeleteMapping("/deleteById/{id}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
     public ApiResponse<?> deleteWorkById(@PathVariable Long id) {
         return workService.delete(id);
     }

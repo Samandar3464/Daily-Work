@@ -1,9 +1,10 @@
 package com.example.project.AdminController;
 
 import com.example.project.api.ApiResponse;
+import com.example.project.model.RoleChange;
 import com.example.project.service.PersonService;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -13,18 +14,26 @@ public class AdminControllerUpToPerson {
     private final PersonService personService;
 
     @GetMapping("/personList")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
     public ApiResponse<?> getUsersList() {
         return new ApiResponse<>(200, personService.getPersonList());
     }
 
-    @DeleteMapping("/deletePerson/{id}")
-    public ApiResponse<?> deleteUser(@PathVariable Integer id) {
-        personService.deletePerson(id);
-        return new ApiResponse<>("Deleted", 200);
-    }
-
     @GetMapping("/getPersoById/{id}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
     public ApiResponse<?> getPersonById(@PathVariable Integer id) {
         return personService.getById(id);
+    }
+
+    @DeleteMapping("/deletePerson/{id}")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ApiResponse<?> deleteUser(@PathVariable Integer id) {
+        return personService.deletePerson(id);
+    }
+
+    @PutMapping("/changePersonRole")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ApiResponse<?> changePersonRole(@RequestBody RoleChange roleChange) {
+        return personService.changePersonRole(roleChange);
     }
 }

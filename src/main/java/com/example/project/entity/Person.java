@@ -6,6 +6,7 @@ import com.example.project.entity.address.CityOrDistrict;
 import com.example.project.entity.address.Province;
 //import com.example.project.entity.address.Village;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -56,7 +57,8 @@ public class Person implements UserDetails {
 //    private Village village;
     private String village;
     private String homeAddress;
-    private boolean isAccountNonLocked;
+    private boolean enableUser=false;
+    private int codeVerification;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -78,15 +80,15 @@ public class Person implements UserDetails {
     }
 
     @Override
-    @JsonIgnore
+    @JsonIgnoreProperties
     public boolean isAccountNonExpired() {
         return true;
     }
 
     @Override
-    @JsonIgnore
+    @JsonIgnoreProperties
     public boolean isAccountNonLocked() {
-        return isAccountNonLocked;
+        return true;
     }
 
     @Override
@@ -98,6 +100,6 @@ public class Person implements UserDetails {
     @Override
     @JsonIgnore
     public boolean isEnabled() {
-        return true;
+        return enableUser;
     }
 }
