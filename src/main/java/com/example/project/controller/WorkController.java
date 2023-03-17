@@ -1,7 +1,6 @@
 package com.example.project.controller;
 
 import com.example.project.api.ApiResponse;
-import com.example.project.model.WorkCategoryRegisterDto;
 import com.example.project.model.WorkRegisterDto;
 import com.example.project.service.WorkService;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +20,7 @@ public class WorkController {
 
     @GetMapping("/getWorkList")
     public ApiResponse<?> getPersonWorkList() {
-        return workService.getPersonList();
+        return workService.getPersonWorksList();
     }
 
     @GetMapping("/getWorkById/{id}")

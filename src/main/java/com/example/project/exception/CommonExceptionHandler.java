@@ -48,4 +48,13 @@ public class CommonExceptionHandler {
                 .code(HttpStatus.ALREADY_REPORTED.toString())
                 .build();
     }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public FieldErrorResponse handleUserNotFoundException(UserNotFoundException e){
+        return FieldErrorResponse.builder()
+                .message(e.getMessage())
+                .code("User not found")
+                .build();
+    }
 }

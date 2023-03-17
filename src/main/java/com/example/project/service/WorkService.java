@@ -11,6 +11,7 @@ import com.example.project.model.WorkResponseDto;
 import com.example.project.repository.Address.CityOrDistrictRepository;
 import com.example.project.repository.Address.ProvinceRepository;
 //import com.example.project.repository.Address.VillageRepository;
+import com.example.project.repository.PersonRepository;
 import com.example.project.repository.WorkCategoryRepository;
 import com.example.project.repository.WorkRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +30,7 @@ public class WorkService {
     private final CityOrDistrictRepository cityOrDistrictRepository;
     private final ProvinceRepository provinceRepository;
     private final WorkRepository workRepository;
-
+    private final PersonRepository personRepository;
 
     public ApiResponse add(WorkRegisterDto workRegisterDto) {
         Work save = workRepository.save(workBuilder(workRegisterDto));
@@ -55,12 +57,13 @@ public class WorkService {
         return new ApiResponse<>(200, workRepository.findAll());
     }
 
-    public ApiResponse getPersonList() {
+    public ApiResponse getPersonWorksList() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication.isAuthenticated()) {
+        if (!authentication.isAuthenticated()) {
             throw new UserNotFoundException("User not found");
         }
-        Person person = (Person) authentication.getPrincipal();
+        String phoneNumber = (String) authentication.getPrincipal();
+        Person person = personRepository.findByPhoneNumber(phoneNumber).orElseThrow(() -> new UserNotFoundException("User not found"));
         return new ApiResponse<>(200, workRepository.findAllByPersonId(person.getId()));
     }
 
@@ -72,12 +75,15 @@ public class WorkService {
 
     public ApiResponse deletePersonWork(Long id) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication.isAuthenticated()) {
+        if (!authentication.isAuthenticated()) {
             throw new UserNotFoundException("User not found");
         }
-        Person person = (Person) authentication.getPrincipal();
-        workRepository.findById(id).orElseThrow((() -> new RecordNotFoundException("Work not found ")));
-        workRepository.deleteByIdAndPersonId(id, person.getId());
+        String phoneNumber = (String) authentication.getPrincipal();
+        Optional<Person> person = personRepository.findByPhoneNumber(phoneNumber);
+        Work work = workRepository.findById(id).orElseThrow((() -> new RecordNotFoundException("Work not found ")));
+        if (work.getPerson().getId()==person.get().getId()){
+            workRepository.deleteById(id);
+        }
         return new ApiResponse<>("Successfully deleted", 200);
     }
 
@@ -95,10 +101,11 @@ public class WorkService {
 
     private Work workBuilder(WorkRegisterDto workRegisterDto) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication.isAuthenticated()) {
+        if (!authentication.isAuthenticated()) {
             throw new UserNotFoundException("User not found");
         }
-        Person person = (Person) authentication.getPrincipal();
+        String principal = (String) authentication.getPrincipal();
+        Optional<Person> byPhoneNumber = personRepository.findByPhoneNumber(principal);
         return Work.builder()
                 .workTitle(workRegisterDto.getWorkTitle())
                 .workDescription(workRegisterDto.getWorkDescription())
@@ -108,7 +115,7 @@ public class WorkService {
                 .province(provinceRepository.getById(workRegisterDto.getProvinceId()))
                 .cityOrDistrict(cityOrDistrictRepository.getById(workRegisterDto.getCityOrDistrictId()))
                 .createdTime(LocalDate.now())
-                .person(person)
+                .person(byPhoneNumber.get())
                 .village(workRegisterDto.getVillage())
                 .build();
     }

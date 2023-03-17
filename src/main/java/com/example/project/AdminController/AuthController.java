@@ -7,9 +7,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
 @RequestMapping("api/auth")
+@CrossOrigin("http://localhost:3000")
 public class AuthController {
     private final PersonService personService;
     @GetMapping("/login")

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 //fildlarga private final qoyib beradi
 //@FieldDefaults(makeFinal = true ,level = AccessLevel.PRIVATE)
 @RequestMapping("api/v1/person")
+@CrossOrigin("http://localhost:3000")
 public class PersonController {
     private final PersonService personService;
     @PostMapping("/addPerson")
