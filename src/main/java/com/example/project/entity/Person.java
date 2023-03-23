@@ -5,6 +5,7 @@ import com.example.project.entity.ENUM.Role;
 import com.example.project.entity.address.CityOrDistrict;
 import com.example.project.entity.address.Province;
 //import com.example.project.entity.address.Village;
+import com.example.project.model.PersonUpdateRequestDto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
@@ -57,8 +58,9 @@ public class Person implements UserDetails {
 //    private Village village;
     private String village;
     private String homeAddress;
-    private boolean enableUser=false;
+    private boolean enableUser = false;
     private int codeVerification;
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -102,4 +104,5 @@ public class Person implements UserDetails {
     public boolean isEnabled() {
         return enableUser;
     }
+
 }

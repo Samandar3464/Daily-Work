@@ -7,11 +7,14 @@ import com.example.project.exception.RecordAlreadyExistException;
 import com.example.project.exception.UserNotFoundException;
 import com.example.project.jwtConfig.JwtGenerate;
 import com.example.project.model.*;
+import com.example.project.repository.Address.CityOrDistrictRepository;
+import com.example.project.repository.Address.ProvinceRepository;
 import com.example.project.repository.PersonRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -23,26 +26,32 @@ import java.util.random.RandomGenerator;
 @RequiredArgsConstructor
 public class PersonService {
     private final PersonRepository personRepository;
+    private final ProvinceRepository provinceRepository;
+    private final CityOrDistrictRepository cityOrDistrictRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final SmsSendingService smsSendingService;
 
     public ApiResponse<?> addPerson(PersonRegisterDto personRegisterDto) {
         Optional<Person> byPhoneNumber = personRepository.findByPhoneNumber(personRegisterDto.getPhoneNumber());
         if (byPhoneNumber.isPresent()) {
             throw new RecordAlreadyExistException("Username already exist");
         }
-        int codeGenerator = verificationCodeGenerator();
-        System.out.println(codeGenerator);
+        int verificationCode = verificationCodeGenerator();
+        System.out.println(verificationCode);
         Person person = Person.builder()
                 .name(personRegisterDto.getName())
                 .phoneNumber(personRegisterDto.getPhoneNumber())
                 .password(passwordEncoder.encode(personRegisterDto.getPassword()))
                 .role(List.of(Role.USER))
-                .codeVerification(codeGenerator)
+                .codeVerification(verificationCode)
                 .build();
-        Person save = personRepository.save(person);
-
-        return new ApiResponse<>("Success", 200, new PersonResponseDto(save.getId(), save.getName(), save.getPhoneNumber()));
+        personRepository.save(person);
+        String massageResponse = smsSendingService.verificationCode(personRegisterDto.getPhoneNumber(), verificationCode);
+        if(massageResponse.equals("queued")) {
+            return new ApiResponse<>("Success", 200, "Code sent to your phone number ");
+        }
+        return new ApiResponse<>("Success", 200, "Something wrong");
     }
 
     public ApiResponse<?> getPersonList() {
@@ -79,11 +88,6 @@ public class PersonService {
     }
 
     public ApiResponse<?> forgetPassword(Verification phoneNumber) {
-//        Optional<Person> byPhoneNumber = personRepository.findByPhoneNumber(phoneNumber);
-//        if (!byPhoneNumber.isPresent()){
-//            throw  new UserNotFoundException("User not found");
-//        }
-//        Person person = byPhoneNumber.get();
         Person person = personRepository.findByPhoneNumber(phoneNumber.getPhoneNumber()).orElseThrow(() -> new UserNotFoundException("User not found"));
         int code = verificationCodeGenerator();
         person.setCodeVerification(code);
@@ -122,8 +126,30 @@ public class PersonService {
         return RandomGenerator.getDefault().nextInt(1000, 9999);
     }
 
-//    public ApiResponse<?> updatePerson(Person update,Integer id){
-//        Person person = personRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found"));
-//    }
+    public ApiResponse<?> updatePerson(PersonUpdateRequestDto update) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (!authentication.isAuthenticated()) {
+            throw new UserNotFoundException("User not found");
+        }
+        String phoneNumber = (String) authentication.getPrincipal();
+        Person person = personRepository.findByPhoneNumber(phoneNumber).orElseThrow(() -> new UserNotFoundException("User not found"));
+        Person updatedPerson = updatePerson(update, person);
+        Person save = personRepository.save(updatedPerson);
+
+        return new ApiResponse<>(200, new PersonResponseDto().of(save));
+    }
+
+    private Person updatePerson(PersonUpdateRequestDto update, Person person) {
+        person.setName(update.getName());
+        person.setSurname(update.getSurname());
+        person.setAge(update.getAge());
+        person.setGender(update.getGender());
+        person.setAboutMe(update.getAboutMe());
+        person.setProvince(provinceRepository.getById(update.getProvinceId()));
+        person.setCityOrDistrict(cityOrDistrictRepository.getById(update.getCityOrDistrictId()));
+        person.setVillage(update.getVillage());
+        person.setHomeAddress(update.getHomeAddress());
+        return person;
+    }
 
 }

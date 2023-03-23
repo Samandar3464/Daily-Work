@@ -48,12 +48,8 @@ public class JwtGenerate {
     public static  List<LinkedHashMap<String, String>> getAuthorities(Claims claims){
       return  (List<LinkedHashMap<String, String>>) claims.get("authorities");
     }
-    private static synchronized Claims getAccessClaim(String token) {
-        try {
+    private static synchronized Claims getAccessClaim(String token) throws ExpiredJwtException{
             return Jwts.parser().setSigningKey(jwtAccessSecretKey).parseClaimsJws(token).getBody();
-        } catch (Exception e) {
-            throw new TimeExceededException();
-        }
     }
 
     private static synchronized Claims getRefreshClaim(String token) {

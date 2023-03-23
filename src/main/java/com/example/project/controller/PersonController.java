@@ -3,6 +3,7 @@ package com.example.project.controller;
 import com.example.project.api.ApiResponse;
 import com.example.project.model.PersonLoginRequestDto;
 import com.example.project.model.PersonRegisterDto;
+import com.example.project.model.PersonUpdateRequestDto;
 import com.example.project.model.Verification;
 import com.example.project.service.PersonService;
 import lombok.RequiredArgsConstructor;
@@ -45,8 +46,9 @@ public class PersonController {
     public ApiResponse<?> changePassword(@Validated @RequestBody PersonRegisterDto personRegisterDto) {
         return personService.changePassword(personRegisterDto);
     }
-//    @PutMapping("/updatePerson")
-//    public ApiResponse<?> updatePerson(){
-//        return personService.updatePerson();
-//    }
+
+    @PutMapping("/updatePerson")
+    public ApiResponse<?> updatePerson(@RequestBody PersonUpdateRequestDto personUpdateRequestDto) {
+        return personService.updatePerson(personUpdateRequestDto);
+    }
 }
