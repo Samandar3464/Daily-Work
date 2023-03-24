@@ -1,5 +1,6 @@
 package com.example.project.service;
 
+import com.example.project.exception.SmsSendingFailException;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,7 @@ public class SmsSendingService {
             return message.getStatus().toString();
         }catch (Exception e){
             e.printStackTrace();
-            return "Something wrong";
+            throw  new SmsSendingFailException("Can not send sms");
         }
 
     }

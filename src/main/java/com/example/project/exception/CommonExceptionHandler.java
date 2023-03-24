@@ -76,4 +76,12 @@ public class CommonExceptionHandler {
                 .code("Access token time out")
                 .build();
     }
+    @ExceptionHandler(SmsSendingFailException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public FieldErrorResponse handleAccessTokenTimeExceededException(SmsSendingFailException e) {
+        return FieldErrorResponse.builder()
+                .message(e.getMessage())
+                .code("Can not send sms to your phone number ")
+                .build();
+    }
 }

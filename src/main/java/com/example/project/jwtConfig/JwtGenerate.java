@@ -1,24 +1,29 @@
 package com.example.project.jwtConfig;
 
 import com.example.project.entity.Person;
-import com.example.project.exception.TimeExceededException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 
+import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
+
 public class JwtGenerate {
-    static String jwtAccessSecretKey = "SecretKeyForAccessToken";
-    static String jwtRefreshSecretKey = "SecretKeyForRefreshToken";
-    static long expirationAccessTime = 1*60*1000 ;
+    //    static String jwtAccessSecretKey = "SecretKeyForAccessToken";
+//    static String jwtRefreshSecretKey = "SecretKeyForRefreshToken";
+    static long expirationAccessTime = 1 * 60 * 1000;
     static long expirationRefreshTime = 1_000 * 60 * 60 * 24;
+    static SecretKey jwtAccessSecretKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
+    static SecretKey jwtRefreshSecretKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
 
     public static synchronized String generateAccessToken(
             Person person
     ) {
+//        System.out.println("access"+jwtAccessSecretKey.toString()+"\n"+"refresh"+jwtRefreshSecretKey.toString());
         return Jwts.builder()
                 .signWith(SignatureAlgorithm.HS512, jwtAccessSecretKey)
                 .setSubject(person.getPhoneNumber())
@@ -45,11 +50,12 @@ public class JwtGenerate {
         return getRefreshClaim(token);
     }
 
-    public static  List<LinkedHashMap<String, String>> getAuthorities(Claims claims){
-      return  (List<LinkedHashMap<String, String>>) claims.get("authorities");
+    public static List<LinkedHashMap<String, String>> getAuthorities(Claims claims) {
+        return (List<LinkedHashMap<String, String>>) claims.get("authorities");
     }
-    private static synchronized Claims getAccessClaim(String token) throws ExpiredJwtException{
-            return Jwts.parser().setSigningKey(jwtAccessSecretKey).parseClaimsJws(token).getBody();
+
+    private static synchronized Claims getAccessClaim(String token) throws ExpiredJwtException {
+        return Jwts.parser().setSigningKey(jwtAccessSecretKey).parseClaimsJws(token).getBody();
     }
 
     private static synchronized Claims getRefreshClaim(String token) {

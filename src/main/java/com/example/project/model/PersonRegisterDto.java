@@ -21,4 +21,9 @@ public class PersonRegisterDto {
     @NotBlank
     @Size(min = 6)
     private String password;
+
+    public PersonRegisterDto(String phoneNumber, String password) {
+        this.phoneNumber = phoneNumber;
+        this.password = password;
+    }
 }

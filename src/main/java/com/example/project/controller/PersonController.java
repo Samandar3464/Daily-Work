@@ -12,8 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/v1/person")
-@CrossOrigin("http://localhost:3000")
+@RequestMapping("/api/v1/person")
 public class PersonController {
     private final PersonService personService;
 
@@ -27,19 +26,19 @@ public class PersonController {
         return personService.login(personLoginRequestDto);
     }
 
-    @GetMapping("/enablePerson")
+    @PostMapping("/enablePerson")
     public ApiResponse<?> enablePerson(@RequestBody Verification verification) {
         return personService.verifyCodeForEnablePerson(verification);
     }
 
     @GetMapping("/forgetPassword")
     public ApiResponse<?> forgetPassword(@RequestBody Verification verification) {
-        return personService.forgetPassword(verification);
+        return personService.generateCodeForForgetPassword(verification);
     }
 
     @GetMapping("/verifyCode")
     public ApiResponse<?> verifyCodeForRestorePassword(@RequestBody Verification verification) {
-        return personService.verifyCodeForRestorePassword(verification);
+        return personService.verifyCodeCheckerForRestorePassword(verification);
     }
 
     @GetMapping("/change/password")

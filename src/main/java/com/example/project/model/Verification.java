@@ -11,4 +11,7 @@ public class Verification {
     private String phoneNumber;
     private int code;
 
+    public Verification(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
 }

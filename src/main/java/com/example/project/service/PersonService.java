@@ -31,28 +31,50 @@ public class PersonService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final SmsSendingService smsSendingService;
+    public static int verificationCode;
 
     public ApiResponse<?> addPerson(PersonRegisterDto personRegisterDto) {
         Optional<Person> byPhoneNumber = personRepository.findByPhoneNumber(personRegisterDto.getPhoneNumber());
         if (byPhoneNumber.isPresent()) {
             throw new RecordAlreadyExistException("Username already exist");
         }
-        int verificationCode = verificationCodeGenerator();
+         verificationCode = verificationCodeGenerator();
         System.out.println(verificationCode);
-        Person person = Person.builder()
-                .name(personRegisterDto.getName())
-                .phoneNumber(personRegisterDto.getPhoneNumber())
-                .password(passwordEncoder.encode(personRegisterDto.getPassword()))
-                .role(List.of(Role.USER))
-                .codeVerification(verificationCode)
-                .build();
-        personRepository.save(person);
         String massageResponse = smsSendingService.verificationCode(personRegisterDto.getPhoneNumber(), verificationCode);
-        if(massageResponse.equals("queued")) {
+        if (massageResponse.equals("queued")) {
+            Person person = Person.builder()
+                    .name(personRegisterDto.getName())
+                    .phoneNumber(personRegisterDto.getPhoneNumber())
+                    .password(passwordEncoder.encode(personRegisterDto.getPassword()))
+                    .role(List.of(Role.USER))
+                    .codeVerification(verificationCode)
+                    .build();
+            personRepository.save(person);
             return new ApiResponse<>("Success", 200, "Code sent to your phone number ");
         }
-        return new ApiResponse<>("Success", 200, "Something wrong");
+
+        return new ApiResponse<>("Fail", 400, "Can not send verification code");
     }
+
+
+//    public ApiResponse<?> addPerson(PersonRegisterDto personRegisterDto) {
+//        Optional<Person> byPhoneNumber = personRepository.findByPhoneNumber(personRegisterDto.getPhoneNumber());
+//        if (byPhoneNumber.isPresent()) {
+//            throw new RecordAlreadyExistException("Username already exist");
+//        }
+//        verificationCode = verificationCodeGenerator();
+//        System.out.println(verificationCode);
+//        Person person = Person.builder()
+//                .name(personRegisterDto.getName())
+//                .phoneNumber(personRegisterDto.getPhoneNumber())
+//                .password(passwordEncoder.encode(personRegisterDto.getPassword()))
+//                .role(List.of(Role.USER))
+//                .codeVerification(verificationCode)
+//                .build();
+//        personRepository.save(person);
+//        return new ApiResponse<>("Success", 200, "Code sent to your phone number ");
+//
+//    }
 
     public ApiResponse<?> getPersonList() {
         return new ApiResponse<>(200, personRepository.findAll());
@@ -87,13 +109,17 @@ public class PersonService {
         return new ApiResponse<>(String.format("Role changed %s", roleChange.getNewRole()), 200);
     }
 
-    public ApiResponse<?> forgetPassword(Verification phoneNumber) {
+    public ApiResponse<?> generateCodeForForgetPassword(Verification phoneNumber) {
         Person person = personRepository.findByPhoneNumber(phoneNumber.getPhoneNumber()).orElseThrow(() -> new UserNotFoundException("User not found"));
-        int code = verificationCodeGenerator();
-        person.setCodeVerification(code);
-        System.out.println(code);
-        personRepository.save(person);
-        return new ApiResponse<>("Verification code sent to your phone number ", 200);
+        String massageResponse = smsSendingService.verificationCode(phoneNumber.getPhoneNumber(), verificationCode);
+        if (massageResponse.equals("queued")) {
+            verificationCode = verificationCodeGenerator();
+            person.setCodeVerification(verificationCode);
+            System.out.println(verificationCode);
+            personRepository.save(person);
+            return new ApiResponse<>("Verification code sent to your phone number ", 200);
+        }
+        return new ApiResponse<>("Can not send verification code ", 400);
     }
 
     public ApiResponse<?> verifyCodeForEnablePerson(Verification verification) {
@@ -106,7 +132,7 @@ public class PersonService {
         return new ApiResponse<>("User verified successfully", 200);
     }
 
-    public ApiResponse<?> verifyCodeForRestorePassword(Verification verification) {
+    public ApiResponse<?> verifyCodeCheckerForRestorePassword(Verification verification) {
         Person person = personRepository.findByPhoneNumber(verification.getPhoneNumber()).orElseThrow(() -> new UserNotFoundException("User not found"));
         if (person.getCodeVerification() == verification.getCode()) {
             person.setCodeVerification(0);
