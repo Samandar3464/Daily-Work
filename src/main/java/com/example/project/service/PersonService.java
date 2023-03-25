@@ -4,22 +4,26 @@ import com.example.project.api.ApiResponse;
 import com.example.project.entity.ENUM.Role;
 import com.example.project.entity.Person;
 import com.example.project.exception.RecordAlreadyExistException;
+import com.example.project.exception.RefreshTokeNotFound;
+import com.example.project.exception.TimeExceededException;
 import com.example.project.exception.UserNotFoundException;
 import com.example.project.jwtConfig.JwtGenerate;
 import com.example.project.model.*;
 import com.example.project.repository.Address.CityOrDistrictRepository;
 import com.example.project.repository.Address.ProvinceRepository;
 import com.example.project.repository.PersonRepository;
+import io.jsonwebtoken.Claims;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.random.RandomGenerator;
 
 @Service
@@ -38,7 +42,7 @@ public class PersonService {
         if (byPhoneNumber.isPresent()) {
             throw new RecordAlreadyExistException("Username already exist");
         }
-         verificationCode = verificationCodeGenerator();
+        verificationCode = verificationCodeGenerator();
         System.out.println(verificationCode);
         String massageResponse = smsSendingService.verificationCode(personRegisterDto.getPhoneNumber(), verificationCode);
         if (massageResponse.equals("queued")) {
@@ -55,26 +59,6 @@ public class PersonService {
 
         return new ApiResponse<>("Fail", 400, "Can not send verification code");
     }
-
-
-//    public ApiResponse<?> addPerson(PersonRegisterDto personRegisterDto) {
-//        Optional<Person> byPhoneNumber = personRepository.findByPhoneNumber(personRegisterDto.getPhoneNumber());
-//        if (byPhoneNumber.isPresent()) {
-//            throw new RecordAlreadyExistException("Username already exist");
-//        }
-//        verificationCode = verificationCodeGenerator();
-//        System.out.println(verificationCode);
-//        Person person = Person.builder()
-//                .name(personRegisterDto.getName())
-//                .phoneNumber(personRegisterDto.getPhoneNumber())
-//                .password(passwordEncoder.encode(personRegisterDto.getPassword()))
-//                .role(List.of(Role.USER))
-//                .codeVerification(verificationCode)
-//                .build();
-//        personRepository.save(person);
-//        return new ApiResponse<>("Success", 200, "Code sent to your phone number ");
-//
-//    }
 
     public ApiResponse<?> getPersonList() {
         return new ApiResponse<>(200, personRepository.findAll());
@@ -97,6 +81,9 @@ public class PersonService {
         String accessToken = "Bear " + JwtGenerate.generateAccessToken((Person) authenticate.getPrincipal());
         String refreshToken = "RefreshToken " + JwtGenerate.generateRefreshToken((Person) authenticate.getPrincipal());
         return new ApiResponse<>("User login successfully", 200, new TokenResponse(accessToken, refreshToken));
+    }
+    public ApiResponse<?> getAccessToken(HttpServletRequest request) {
+        return new ApiResponse<>(200, checkRefreshTokenValidAndGetAccessToken(request));
     }
 
     public ApiResponse<?> changePersonRole(RoleChange roleChange) {
@@ -148,10 +135,6 @@ public class PersonService {
         return new ApiResponse<>("Password  successfully changed", 200);
     }
 
-    private int verificationCodeGenerator() {
-        return RandomGenerator.getDefault().nextInt(1000, 9999);
-    }
-
     public ApiResponse<?> updatePerson(PersonUpdateRequestDto update) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (!authentication.isAuthenticated()) {
@@ -163,6 +146,10 @@ public class PersonService {
         Person save = personRepository.save(updatedPerson);
 
         return new ApiResponse<>(200, new PersonResponseDto().of(save));
+    }
+
+    private int verificationCodeGenerator() {
+        return RandomGenerator.getDefault().nextInt(1000, 9999);
     }
 
     private Person updatePerson(PersonUpdateRequestDto update, Person person) {
@@ -178,4 +165,30 @@ public class PersonService {
         return person;
     }
 
+
+
+    private String checkRefreshTokenValidAndGetAccessToken(HttpServletRequest request) {
+        String requestHeader = request.getHeader("Authorization");
+        if (requestHeader == null || !requestHeader.startsWith("RefreshToken")) {
+            throw  new RefreshTokeNotFound("ReFresh token not found");
+        }
+        String token = requestHeader.replace("RefreshToken ", "");
+        Claims claims = JwtGenerate.isValidRefreshToken(token);
+        if (claims == null) {
+            throw  new TimeExceededException("ReFresh token valid time end");
+        }
+        Person person = personRepository.findByPhoneNumber(claims.getSubject()).orElseThrow(() -> new UserNotFoundException("User not found"));
+        String accessToken = "Bear " + JwtGenerate.generateAccessToken(person);
+        return accessToken;
+    }
+
+    private List<SimpleGrantedAuthority> getAuthorities(List<LinkedHashMap<String, String>> authorities) {
+        List<SimpleGrantedAuthority> authorityList = new ArrayList<>();
+        authorities.forEach((map) -> {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                authorityList.add(new SimpleGrantedAuthority(entry.getValue()));
+            }
+        });
+        return authorityList;
+    }
 }

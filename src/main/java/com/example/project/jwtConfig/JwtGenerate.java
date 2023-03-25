@@ -1,6 +1,7 @@
 package com.example.project.jwtConfig;
 
 import com.example.project.entity.Person;
+import com.example.project.exception.TimeExceededException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -54,16 +55,19 @@ public class JwtGenerate {
         return (List<LinkedHashMap<String, String>>) claims.get("authorities");
     }
 
-    private static synchronized Claims getAccessClaim(String token) throws ExpiredJwtException {
-        return Jwts.parser().setSigningKey(jwtAccessSecretKey).parseClaimsJws(token).getBody();
+    private static synchronized Claims getAccessClaim(String token)  {
+        try{
+            return Jwts.parser().setSigningKey(jwtAccessSecretKey).parseClaimsJws(token).getBody();
+        }catch (Exception e){
+           throw e;
+        }
     }
 
     private static synchronized Claims getRefreshClaim(String token) {
         try {
             return Jwts.parser().setSigningKey(jwtRefreshSecretKey).parseClaimsJws(token).getBody();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+        } catch (Exception e){
+            throw e;
         }
     }
 }

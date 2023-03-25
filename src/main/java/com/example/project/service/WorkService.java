@@ -105,7 +105,15 @@ public class WorkService {
             throw new UserNotFoundException("User not found");
         }
         String principal = (String) authentication.getPrincipal();
+//      test uchun
         Optional<Person> byPhoneNumber = personRepository.findByPhoneNumber(principal);
+        Person person = Person.builder()
+                .name("sam")
+                .phoneNumber("123456789")
+                .password("123456")
+                .build();
+        Person save = personRepository.save(person);
+
         return Work.builder()
                 .workTitle(workRegisterDto.getWorkTitle())
                 .workDescription(workRegisterDto.getWorkDescription())
@@ -115,7 +123,8 @@ public class WorkService {
                 .province(provinceRepository.getById(workRegisterDto.getProvinceId()))
                 .cityOrDistrict(cityOrDistrictRepository.getById(workRegisterDto.getCityOrDistrictId()))
                 .createdTime(LocalDate.now())
-                .person(byPhoneNumber.get())
+                .person(save)
+//                .person(byPhoneNumber.get())
                 .village(workRegisterDto.getVillage())
                 .build();
     }

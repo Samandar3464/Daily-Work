@@ -1,49 +1,59 @@
-//package com.example.project.AdminController;
+//package com.example.project.controller;
 //
 //import com.example.project.BaseTestConfiguration;
-//import com.example.project.model.WorkCategoryRegisterDto;
-//import com.example.project.model.WorkRegisterDto;
+//import com.example.project.model.*;
 //import com.example.project.model.address.CityOrDistrictRegisterDto;
 //import com.example.project.model.address.ProvinceRegisterDto;
 //import org.junit.jupiter.api.AfterEach;
 //import org.junit.jupiter.api.Test;
-//import org.springframework.boot.test.context.SpringBootTest;
 //import org.springframework.http.MediaType;
 //import org.springframework.security.test.context.support.WithMockUser;
 //import org.springframework.test.web.servlet.ResultActions;
 //import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 //import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
+//
+//import static com.example.project.service.PersonService.verificationCode;
 //import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 //import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-//@SpringBootTest
-//class AdminControllerUpToWorkTest extends BaseTestConfiguration {
 //
+//class WorkControllerTest extends BaseTestConfiguration {
 //    @AfterEach
-//    void tearDown() {
+//    void termDown(){
 //        workRepository.deleteAll();
 //    }
-//
 //    @Test
 //    @WithMockUser(roles = "SUPER_ADMIN")
-//    void getWorkList() throws Exception {
+//    void addCityAndProvince() throws Exception {
 //        addProvince();
 //        addCityDistrict();
 //        addCategory();
-//        add();
-//        getList().andExpect(status().isOk());
 //    }
 //
 //    @Test
-//    @WithMockUser(roles = "SUPER_ADMIN")
-//    void deleteWorkById() throws Exception {
-//        add();
-//        callDelete(2);
+//    void addWork() throws Exception {
+//        addCityAndProvince();
+//        addUser();
+//        enableUser();
+//        login();
+//        add().andExpect(status().isOk());
 //    }
-//    @Test
-//    @WithMockUser(roles = "SUPER_ADMIN")
-//    void deleteWorkByIdThrow() throws Exception {
-//        callDelete(999);
-//    }
+//
+////    @Test
+////    void getPersonWorkList() {
+////    }
+////
+////    @Test
+////    void getWorkById() {
+////    }
+////
+////    @Test
+////    void deletePersonWorkById() {
+////    }
+////
+////    @Test
+////    void updateWork() {
+////    }
+//
 //    private ResultActions add() throws Exception {
 //        final MockHttpServletRequestBuilder requestBuilder =
 //                post("/api/v1/work/addWork")
@@ -51,18 +61,6 @@
 //                        .content(new ObjectMapper().writeValueAsString(createWork()));
 //        return mockMvc.perform(requestBuilder);
 //    }
-//
-//    private ResultActions getList() throws Exception {
-//        final MockHttpServletRequestBuilder requestBuilder =
-//                get("/api/v1/admin/work/getWorkList");
-//        return mockMvc.perform(requestBuilder);
-//    }
-//    private ResultActions callDelete(int id) throws Exception {
-//        final MockHttpServletRequestBuilder requestBuilder =
-//                delete("/api/v1/admin/work/deleteById/" + id);
-//        return mockMvc.perform(requestBuilder);
-//    }
-//
 //    private WorkRegisterDto createWork(){
 //        return WorkRegisterDto.builder()
 //                .workTitle("Remont")
@@ -75,6 +73,12 @@
 //                .village("qarshi")
 //                .build();
 //    }
+//    private ResultActions callDelete(int id) throws Exception {
+//        final MockHttpServletRequestBuilder requestBuilder =
+//                delete("/api/v1/admin/work/deleteById/" + id);
+//        return mockMvc.perform(requestBuilder);
+//    }
+//
 //    private ResultActions addCityDistrict() throws Exception {
 //        final MockHttpServletRequestBuilder requestBuilder =
 //                post("/api/v1/addCity")
@@ -95,5 +99,29 @@
 //                        .contentType(MediaType.APPLICATION_JSON)
 //                        .content(new ObjectMapper().writeValueAsString(new ProvinceRegisterDto("Tashkent")));
 //        return mockMvc.perform(requestBuilder);
+//    }
+//    private ResultActions addUser() throws Exception {
+//        final MockHttpServletRequestBuilder request =
+//                post("/api/v1/person/addPerson")
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(new ObjectMapper().writeValueAsString(
+//                                new PersonRegisterDto("123777777", "User", "123456")));
+//        return mockMvc.perform(request);
+//    }
+//    private ResultActions enableUser() throws Exception {
+//        final MockHttpServletRequestBuilder request =
+//                post("/api/v1/person/enablePerson")
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(new ObjectMapper().writeValueAsString(
+//                                new Verification("123777777", verificationCode)));
+//        return mockMvc.perform(request);
+//    }
+//    private ResultActions login() throws Exception {
+//        final MockHttpServletRequestBuilder request =
+//                get("/api/v1/person/login")
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(new ObjectMapper().writeValueAsString(
+//                                new PersonLoginRequestDto("123777777", "123456")));
+//        return mockMvc.perform(request);
 //    }
 //}

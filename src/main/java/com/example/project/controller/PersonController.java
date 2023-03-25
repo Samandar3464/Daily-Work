@@ -6,6 +6,7 @@ import com.example.project.model.PersonRegisterDto;
 import com.example.project.model.PersonUpdateRequestDto;
 import com.example.project.model.Verification;
 import com.example.project.service.PersonService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -49,5 +50,10 @@ public class PersonController {
     @PutMapping("/updatePerson")
     public ApiResponse<?> updatePerson(@RequestBody PersonUpdateRequestDto personUpdateRequestDto) {
         return personService.updatePerson(personUpdateRequestDto);
+    }
+
+    @GetMapping("/regenerate/access/token")
+    public ApiResponse<?> getAccessTokenFromRefreshToken(HttpServletRequest request){
+        return personService.getAccessToken(request);
     }
 }

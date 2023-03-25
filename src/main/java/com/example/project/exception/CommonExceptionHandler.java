@@ -59,21 +59,12 @@ public class CommonExceptionHandler {
                 .build();
     }
 
-    @ExceptionHandler(TimeExceededException.class)
+    @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.BAD_GATEWAY)
-    public FieldErrorResponse handleAccessTokenTimeExceededException(TimeExceededException e) {
+    public FieldErrorResponse handleAccessTokenTimeExceededException(Exception e) {
         return FieldErrorResponse.builder()
                 .message(e.getMessage())
-                .code("Access token time out")
-                .build();
-    }
-
-    @ExceptionHandler(ExpiredJwtException.class)
-    @ResponseStatus(HttpStatus.BAD_GATEWAY)
-    public FieldErrorResponse handleAccessTokenTimeExceededException(ExpiredJwtException e) {
-        return FieldErrorResponse.builder()
-                .message(e.getMessage())
-                .code("Access token time out")
+                .code(" Token time out")
                 .build();
     }
     @ExceptionHandler(SmsSendingFailException.class)

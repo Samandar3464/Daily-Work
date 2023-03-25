@@ -16,7 +16,7 @@ public class AdminControllerUpToPerson {
     @GetMapping("/personList")
     @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
     public ApiResponse<?> getUsersList() {
-        return new ApiResponse<>(200, personService.getPersonList());
+        return  personService.getPersonList();
     }
 
     @GetMapping("/getPersoById/{id}")

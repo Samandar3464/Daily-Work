@@ -87,6 +87,12 @@ class PersonControllerTest extends BaseTestConfiguration {
         verify();
         changePassword().andExpect(status().isOk());
     }
+    @Test
+    void getAccessTokenFromRefreshToken() throws Exception {
+        add();
+        enable();
+        callLogin().andExpect(status().isOk());
+    }
 
 //    @WithMockUser(roles = "SUPER_ADMIN")
 //    void addCityAndProvince() throws Exception {
@@ -155,6 +161,8 @@ class PersonControllerTest extends BaseTestConfiguration {
                                 new Verification("123777777", verificationCode)));
         return mockMvc.perform(request);
     }
+
+
 //    private ResultActions updateUser() throws Exception {
 //        final MockHttpServletRequestBuilder request =
 //                put("/api/v1/person/updatePerson")
