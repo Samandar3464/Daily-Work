@@ -16,6 +16,7 @@ import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -36,7 +37,32 @@ public class PersonService {
     private final AuthenticationManager authenticationManager;
     private final SmsSendingService smsSendingService;
     public static int verificationCode;
+//    Sms sending ishlaydigon versiyasi asosiy method
 
+    //    public ApiResponse<?> addPerson(PersonRegisterDto personRegisterDto) {
+//        Optional<Person> byPhoneNumber = personRepository.findByPhoneNumber(personRegisterDto.getPhoneNumber());
+//        if (byPhoneNumber.isPresent()) {
+//            throw new RecordAlreadyExistException("Username already exist");
+//        }
+//        verificationCode = verificationCodeGenerator();
+//        System.out.println(verificationCode);
+//        String massageResponse = smsSendingService.verificationCode(personRegisterDto.getPhoneNumber(), verificationCode);
+//        if (massageResponse.equals("queued")) {
+//            Person person = Person.builder()
+//                    .name(personRegisterDto.getName())
+//                    .phoneNumber(personRegisterDto.getPhoneNumber())
+//                    .password(passwordEncoder.encode(personRegisterDto.getPassword()))
+//                    .role(List.of(Role.USER))
+//                    .codeVerification(verificationCode)
+//                    .build();
+//            personRepository.save(person);
+//            return new ApiResponse<>("Success", 200, "Code sent to your phone number ");
+//        }
+//
+//        return new ApiResponse<>("Fail", 400, "Can not send verification code");
+//    }
+
+//    Sms sending olib tashlangan versiyasi
     public ApiResponse<?> addPerson(PersonRegisterDto personRegisterDto) {
         Optional<Person> byPhoneNumber = personRepository.findByPhoneNumber(personRegisterDto.getPhoneNumber());
         if (byPhoneNumber.isPresent()) {
@@ -44,8 +70,6 @@ public class PersonService {
         }
         verificationCode = verificationCodeGenerator();
         System.out.println(verificationCode);
-        String massageResponse = smsSendingService.verificationCode(personRegisterDto.getPhoneNumber(), verificationCode);
-        if (massageResponse.equals("queued")) {
             Person person = Person.builder()
                     .name(personRegisterDto.getName())
                     .phoneNumber(personRegisterDto.getPhoneNumber())
@@ -55,9 +79,6 @@ public class PersonService {
                     .build();
             personRepository.save(person);
             return new ApiResponse<>("Success", 200, "Code sent to your phone number ");
-        }
-
-        return new ApiResponse<>("Fail", 400, "Can not send verification code");
     }
 
     public ApiResponse<?> getPersonList() {
@@ -76,12 +97,18 @@ public class PersonService {
     }
 
     public ApiResponse<?> login(PersonLoginRequestDto personLoginRequestDto) {
-        Authentication authentication = new UsernamePasswordAuthenticationToken(personLoginRequestDto.getPhoneNumber(), personLoginRequestDto.getPassword());
-        Authentication authenticate = authenticationManager.authenticate(authentication);
-        String accessToken = "Bear " + JwtGenerate.generateAccessToken((Person) authenticate.getPrincipal());
-        String refreshToken = "RefreshToken " + JwtGenerate.generateRefreshToken((Person) authenticate.getPrincipal());
-        return new ApiResponse<>("User login successfully", 200, new TokenResponse(accessToken, refreshToken));
+       try {
+           Authentication authentication = new UsernamePasswordAuthenticationToken(personLoginRequestDto.getPhoneNumber(), personLoginRequestDto.getPassword());
+           Authentication authenticate = authenticationManager.authenticate(authentication);
+           String accessToken = "Bear " + JwtGenerate.generateAccessToken((Person) authenticate.getPrincipal());
+           String refreshToken = "RefreshToken " + JwtGenerate.generateRefreshToken((Person) authenticate.getPrincipal());
+           return new ApiResponse<>("User login successfully", 200, new TokenResponse(accessToken, refreshToken));
+       }catch (BadCredentialsException e){
+           throw new UserNotFoundException("USer not fount");
+       }
+
     }
+
     public ApiResponse<?> getAccessToken(HttpServletRequest request) {
         return new ApiResponse<>(200, checkRefreshTokenValidAndGetAccessToken(request));
     }
@@ -95,18 +122,27 @@ public class PersonService {
         personRepository.save(person);
         return new ApiResponse<>(String.format("Role changed %s", roleChange.getNewRole()), 200);
     }
+// SMS Jonatadi telga asosiy method
+//    public ApiResponse<?> generateCodeForForgetPassword(Verification phoneNumber) {
+//        Person person = personRepository.findByPhoneNumber(phoneNumber.getPhoneNumber()).orElseThrow(() -> new UserNotFoundException("User not found"));
+//        String massageResponse = smsSendingService.verificationCode(phoneNumber.getPhoneNumber(), verificationCode);
+//        if (massageResponse.equals("queued")) {
+//            verificationCode = verificationCodeGenerator();
+//            person.setCodeVerification(verificationCode);
+//            System.out.println(verificationCode);
+//            personRepository.save(person);
+//            return new ApiResponse<>("Verification code sent to your phone number ", 200);
+//        }
+//        return new ApiResponse<>("Can not send verification code ", 400);
+//    }
 
     public ApiResponse<?> generateCodeForForgetPassword(Verification phoneNumber) {
         Person person = personRepository.findByPhoneNumber(phoneNumber.getPhoneNumber()).orElseThrow(() -> new UserNotFoundException("User not found"));
-        String massageResponse = smsSendingService.verificationCode(phoneNumber.getPhoneNumber(), verificationCode);
-        if (massageResponse.equals("queued")) {
             verificationCode = verificationCodeGenerator();
             person.setCodeVerification(verificationCode);
             System.out.println(verificationCode);
             personRepository.save(person);
             return new ApiResponse<>("Verification code sent to your phone number ", 200);
-        }
-        return new ApiResponse<>("Can not send verification code ", 400);
     }
 
     public ApiResponse<?> verifyCodeForEnablePerson(Verification verification) {
@@ -165,30 +201,19 @@ public class PersonService {
         return person;
     }
 
-
-
     private String checkRefreshTokenValidAndGetAccessToken(HttpServletRequest request) {
         String requestHeader = request.getHeader("Authorization");
         if (requestHeader == null || !requestHeader.startsWith("RefreshToken")) {
-            throw  new RefreshTokeNotFound("ReFresh token not found");
+            throw new RefreshTokeNotFound("ReFresh token not found");
         }
         String token = requestHeader.replace("RefreshToken ", "");
         Claims claims = JwtGenerate.isValidRefreshToken(token);
         if (claims == null) {
-            throw  new TimeExceededException("ReFresh token valid time end");
+            throw new TimeExceededException("ReFresh token valid time end");
         }
         Person person = personRepository.findByPhoneNumber(claims.getSubject()).orElseThrow(() -> new UserNotFoundException("User not found"));
         String accessToken = "Bear " + JwtGenerate.generateAccessToken(person);
         return accessToken;
     }
 
-    private List<SimpleGrantedAuthority> getAuthorities(List<LinkedHashMap<String, String>> authorities) {
-        List<SimpleGrantedAuthority> authorityList = new ArrayList<>();
-        authorities.forEach((map) -> {
-            for (Map.Entry<String, String> entry : map.entrySet()) {
-                authorityList.add(new SimpleGrantedAuthority(entry.getValue()));
-            }
-        });
-        return authorityList;
-    }
 }

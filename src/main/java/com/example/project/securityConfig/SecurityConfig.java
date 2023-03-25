@@ -24,19 +24,22 @@ public class SecurityConfig {
     private final AuthService authService;
     private final String[] USER_CAN_ENTER_GET =
             new String[]{
-                    "/**"
+                    "/api/v1/person/**",
+                    "/api/v1/work/**"
             };
     private final String[] USER_CAN_ENTER_POST =
             new String[]{
-                    "/**"
+                    "/api/v1/person/**",
+                    "/api/v1/work/**"
             };
     private final String[] USER_CAN_ENTER_PUT =
             new String[]{
-                    "/**"
+                    "/api/v1/person/**",
+                    "/api/v1/work/updateCategory/*"
             };
     private final String[] USER_CAN_ENTER_DELETE =
             new String[]{
-                    "/**"
+                    "/api/v1/work/deleteById/*"
             };
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -49,13 +52,6 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE, USER_CAN_ENTER_DELETE).permitAll()
                 .anyRequest()
                 .authenticated()
-//                .and()
-//                .formLogin().loginPage("/auth").defaultSuccessUrl("/").failureForwardUrl("/auth").and()
-//                .oauth2Login()
-//                .successHandler((request, response, authentication) -> {
-//                    DefaultOAuth2User auth2User = (DefaultOAuth2User) authentication.getPrincipal();
-//                    response.sendRedirect("/");
-//                })
                 .and()
                 .logout()
                 .logoutUrl("/logout")

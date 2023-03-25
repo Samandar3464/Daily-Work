@@ -63,8 +63,7 @@ class PersonControllerTest extends BaseTestConfiguration {
 
     @Test
     void loginThrowIfUserNotFound() throws Exception {
-        add();
-        callLogin().andExpect(status().isForbidden());
+        callLogin().andExpect(status().isNotFound());
     }
     @Test
     void forgetPassword() throws Exception {
