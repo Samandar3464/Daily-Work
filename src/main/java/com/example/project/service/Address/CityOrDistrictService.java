@@ -53,14 +53,14 @@ public class CityOrDistrictService implements BaseService<CityOrDistrict, CityOr
 
     @Override
     public ApiResponse getById(Integer id) {
-        CityOrDistrict cityOrDistrict = cityOrDistrictRepository.findById(id).orElseThrow((() -> new RecordNotFoundException("Village not found ")));
+        CityOrDistrict cityOrDistrict = cityOrDistrictRepository.findById(id).orElseThrow((() -> new RecordNotFoundException("City not found ")));
         return new ApiResponse<>(200, cityOrDistrict);
     }
 
     @Override
     public ApiResponse update(CityOrDistrictRegisterDto cityOrDistrictRegisterDto, Integer id) {
         CityOrDistrict cityOrDistrict = cityOrDistrictRepository.findById(id).orElseThrow((() -> new RecordNotFoundException("City not found ")));
-        Province province = provinceRepository.findById(cityOrDistrictRegisterDto.getProvinceId()).orElseThrow(() -> new RecordNotFoundException("City not found"));
+        Province province = provinceRepository.findById(cityOrDistrictRegisterDto.getProvinceId()).orElseThrow(() -> new RecordNotFoundException("Province not found"));
         cityOrDistrict.setName(cityOrDistrictRegisterDto.getName());
         cityOrDistrict.setProvince(province);
         CityOrDistrict save = cityOrDistrictRepository.save(cityOrDistrict);

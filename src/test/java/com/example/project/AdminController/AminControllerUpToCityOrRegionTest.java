@@ -106,7 +106,7 @@ class AminControllerUpToCityOrRegionTest extends BaseTestConfiguration {
         final MockHttpServletRequestBuilder requestBuilder =
                 post("/api/v1/addCity")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(new CityOrDistrictRegisterDto("Tashkent sh",1)));
+                        .content(new ObjectMapper().writeValueAsString(new CityOrDistrictRegisterDto("Tashkent sh",8)));
         return mockMvc.perform(requestBuilder);
     }
 
@@ -130,7 +130,7 @@ class AminControllerUpToCityOrRegionTest extends BaseTestConfiguration {
         final MockHttpServletRequestBuilder requestBuilder =
                 put("/api/v1/updateCity/"+id)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(new CityOrDistrictRegisterDto("Qarshi sh",1)));
+                        .content(new ObjectMapper().writeValueAsString(new CityOrDistrictRegisterDto("Qarshi sh",8)));
         return mockMvc.perform(requestBuilder);
     }
 //    private ResultActions updateThrow(int id) throws Exception {
