@@ -1,4 +1,5 @@
 package com.example.project.model;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -7,6 +8,7 @@ import java.time.LocalDate;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class WorkResponseDto {
     private Long id;
     private String workTitle;
@@ -18,5 +20,5 @@ public class WorkResponseDto {
     private String provinceName;
     private String cityOrDistrictName;
     private String village;
-    private PersonResponseDto personResponseDto;
+    private PersonResponseDtoForWork personResponseDtoForWork;
 }

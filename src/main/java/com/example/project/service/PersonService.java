@@ -100,7 +100,7 @@ public class PersonService {
        try {
            Authentication authentication = new UsernamePasswordAuthenticationToken(personLoginRequestDto.getPhoneNumber(), personLoginRequestDto.getPassword());
            Authentication authenticate = authenticationManager.authenticate(authentication);
-           String accessToken = "Bear " + JwtGenerate.generateAccessToken((Person) authenticate.getPrincipal());
+           String accessToken = "Bearer " + JwtGenerate.generateAccessToken((Person) authenticate.getPrincipal());
            String refreshToken = "RefreshToken " + JwtGenerate.generateRefreshToken((Person) authenticate.getPrincipal());
            return new ApiResponse<>("User login successfully", 200, new TokenResponse(accessToken, refreshToken));
        }catch (BadCredentialsException e){

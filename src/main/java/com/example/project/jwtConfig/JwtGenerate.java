@@ -16,7 +16,7 @@ import java.util.List;
 public class JwtGenerate {
     //    static String jwtAccessSecretKey = "SecretKeyForAccessToken";
 //    static String jwtRefreshSecretKey = "SecretKeyForRefreshToken";
-    static long expirationAccessTime = 1 * 60 * 1000;
+    static long expirationAccessTime = 3 * 60 * 1000;
     static long expirationRefreshTime = 1_000 * 60 * 60 * 24;
     static SecretKey jwtAccessSecretKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
     static SecretKey jwtRefreshSecretKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);

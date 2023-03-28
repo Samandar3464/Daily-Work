@@ -4,6 +4,7 @@ import com.example.project.api.ApiResponse;
 import com.example.project.model.WorkRegisterDto;
 import com.example.project.service.WorkService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,6 +37,13 @@ public class WorkController {
     @PutMapping("/updateCategory/{id}")
     public ApiResponse<?> updateWork(@PathVariable Long id,@Validated @RequestBody WorkRegisterDto workRegisterDto) {
         return workService.update(workRegisterDto, id);
+    }
+    @GetMapping("/workList")
+    public ApiResponse<?> getWorkList(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "createdTime") String sort) {
+        return workService.getList(page, size, sort);
     }
 
 }
