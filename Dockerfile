@@ -1,4 +1,4 @@
 FROM openjdk:17-alpine
-ADD /target/spring_boot_security_web-0.0.1-SNAPSHOT.jar codingbat.jar
-ENTRYPOINT ["java","-jar" , "codingbat.jar"]
+ADD /target/Project-0.0.1-SNAPSHOT.jar daily_work.jar
+ENTRYPOINT ["java","-jar" , "daily_work.jar"]
 EXPOSE 8080
