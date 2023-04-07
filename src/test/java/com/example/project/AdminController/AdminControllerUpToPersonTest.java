@@ -63,7 +63,7 @@ class AdminControllerUpToPersonTest extends BaseTestConfiguration {
     }
     private ResultActions getById(int id) throws Exception {
         final MockHttpServletRequestBuilder request =
-                get("/api/v1/admin/person/getPersoById/"+id);
+                get("/api/v1/admin/person/getPersonById/"+id);
         return mockMvc.perform(request);
     }
     private ResultActions deleteById(int id) throws Exception {

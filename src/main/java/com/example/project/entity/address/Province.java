@@ -20,7 +20,6 @@ import java.util.List;
 public class Province extends BaseClass {
     @OneToMany(mappedBy = "province")
     @Cascade(CascadeType.ALL)
-    @Column(unique = true)
     @JsonIgnore
     private List<CityOrDistrict> cityOrDistrictList;
     @JsonIgnore

@@ -69,7 +69,8 @@ public class WorkService {
         if (!authentication.isAuthenticated()) {
             throw new UserNotFoundException("User not found");
         }
-        String phoneNumber = (String) authentication.getPrincipal();
+        Person personFromContext = (Person) authentication.getPrincipal();
+        String phoneNumber = personFromContext.getPhoneNumber();
         Person person = personRepository.findByPhoneNumber(phoneNumber).orElseThrow(() -> new UserNotFoundException("User not found"));
         return new ApiResponse<>(200, workRepository.findAllByPersonId(person.getId()));
     }
@@ -85,7 +86,8 @@ public class WorkService {
         if (!authentication.isAuthenticated()) {
             throw new UserNotFoundException("User not found");
         }
-        String phoneNumber = (String) authentication.getPrincipal();
+        Person personFromContext = (Person) authentication.getPrincipal();
+        String phoneNumber = personFromContext.getPhoneNumber();
         Optional<Person> person = personRepository.findByPhoneNumber(phoneNumber);
         Work work = workRepository.findById(id).orElseThrow((() -> new RecordNotFoundException("Work not found ")));
         if (work.getPerson().getId() == person.get().getId()) {
@@ -110,8 +112,9 @@ public class WorkService {
         if (!authentication.isAuthenticated()) {
             throw new UserNotFoundException("User not found");
         }
-        String phone = (String) authentication.getPrincipal();
-        Person person = personRepository.findByPhoneNumber(phone).orElseThrow(() -> new UserNotFoundException("User not found"));
+        Person personFromContext = (Person) authentication.getPrincipal();
+        String phoneNumber = personFromContext.getPhoneNumber();
+        Person person = personRepository.findByPhoneNumber(phoneNumber).orElseThrow(() -> new UserNotFoundException("User not found"));
 
         return Work.builder()
                 .workTitle(workRegisterDto.getWorkTitle())
