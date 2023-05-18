@@ -1,6 +1,8 @@
 package com.example.project.exception;
 
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.BindException;
@@ -8,6 +10,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.security.SignatureException;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -60,14 +63,16 @@ public class CommonExceptionHandler {
                 .build();
     }
 
-    @ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.BAD_GATEWAY)
-    public FieldErrorResponse handleAccessTokenTimeExceededException(Exception e) {
+    @ExceptionHandler(value = {ExpiredJwtException.class, SignatureException.class,
+            UnsupportedJwtException.class, MalformedJwtException.class, IllegalArgumentException.class})
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public FieldErrorResponse handleAccessTokenTimeExceeded(Exception e) {
         return FieldErrorResponse.builder()
                 .message(e.getMessage())
-                .code(" Token time out")
+                .code("Token time out")
                 .build();
     }
+
     @ExceptionHandler(SmsSendingFailException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public FieldErrorResponse handleAccessTokenTimeExceededException(SmsSendingFailException e) {
